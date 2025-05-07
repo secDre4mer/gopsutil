@@ -71,12 +71,12 @@ func TimesWithContext(_ context.Context, percpu bool) ([]TimesStat, error) {
 	var lpIdleTime common.FILETIME
 	var lpKernelTime common.FILETIME
 	var lpUserTime common.FILETIME
-	r, _, _ := common.ProcGetSystemTimes.Call(
+	r, _, err := common.ProcGetSystemTimes.Call(
 		uintptr(unsafe.Pointer(&lpIdleTime)),
 		uintptr(unsafe.Pointer(&lpKernelTime)),
 		uintptr(unsafe.Pointer(&lpUserTime)))
 	if r == 0 {
-		return ret, windows.GetLastError()
+		return nil, err
 	}
 
 	LOT := float64(0.0000001)
@@ -169,8 +169,8 @@ func perfInfo() ([]win32_SystemProcessorPerformanceInformation, error) {
 	retCode, _, err := common.ProcNtQuerySystemInformation.Call(
 		win32_SystemProcessorPerformanceInformationClass, // System Information Class -> SystemProcessorPerformanceInformation
 		uintptr(unsafe.Pointer(&resultBuffer[0])),        // pointer to first element in result buffer
-		bufferSize,                        // size of the buffer in memory
-		uintptr(unsafe.Pointer(&retSize)), // pointer to the size of the returned results the windows proc will set this
+		bufferSize,                                       // size of the buffer in memory
+		uintptr(unsafe.Pointer(&retSize)),                // pointer to the size of the returned results the windows proc will set this
 	)
 
 	// check return code for errors
