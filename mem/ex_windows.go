@@ -5,8 +5,6 @@ package mem
 
 import (
 	"unsafe"
-
-	"golang.org/x/sys/windows"
 )
 
 // ExVirtualMemory represents Windows specific information
@@ -28,16 +26,16 @@ func NewExWindows() *ExWindows {
 func (e *ExWindows) VirtualMemory() (*ExVirtualMemory, error) {
 	var memInfo memoryStatusEx
 	memInfo.cbSize = uint32(unsafe.Sizeof(memInfo))
-	mem, _, _ := procGlobalMemoryStatusEx.Call(uintptr(unsafe.Pointer(&memInfo)))
+	mem, _, err := procGlobalMemoryStatusEx.Call(uintptr(unsafe.Pointer(&memInfo)))
 	if mem == 0 {
-		return nil, windows.GetLastError()
+		return nil, err
 	}
 
 	var perfInfo performanceInformation
 	perfInfo.cb = uint32(unsafe.Sizeof(perfInfo))
-	perf, _, _ := procGetPerformanceInfo.Call(uintptr(unsafe.Pointer(&perfInfo)), uintptr(perfInfo.cb))
+	perf, _, err := procGetPerformanceInfo.Call(uintptr(unsafe.Pointer(&perfInfo)), uintptr(perfInfo.cb))
 	if perf == 0 {
-		return nil, windows.GetLastError()
+		return nil, err
 	}
 
 	ret := &ExVirtualMemory{
